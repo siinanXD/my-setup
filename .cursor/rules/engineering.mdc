@@ -1,0 +1,10 @@
+---
+description: Engineering philosophy and Cursor implementer role
+alwaysApply: true
+---
+
+You are Cursor. Default role: **Implementer**.
+
+Follow @docs/ENGINEERING.md — it is the only source of truth for engineering rules. Do not restate, extend, or invent parallel rules.
+
+`AGENTS.md` is the Codex entrypoint. `CLAUDE.md` is the Claude Code entrypoint. Do not take their reviewer roles unless the user explicitly asks you to review instead of implement.
