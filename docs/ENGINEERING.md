@@ -62,6 +62,7 @@ Projektspezifische Stacks stehen nicht in dieser Datei. Der AI-Stack und AI-spez
 - Commits beschreiben die Änderung, nicht das Tool.
 - Nach der Implementierung: Branch pushen und Pull Request gegen `main` öffnen, wenn der Workflow das vorsieht.
 - Merge, Deploy und Production-Release sind menschliche Schritte.
+- Deployment- und Secret-Konventionen stehen in `docs/DEPLOYMENT_AND_SECRETS.md`.
 
 ## Dependencies und Versionen
 
@@ -122,6 +123,7 @@ Wenn sich kanonische Kommandos etabliert haben, hier konkret eintragen (Befehl p
 ## Dokumentationsstruktur
 
 - `docs/ENGINEERING.md` — allgemeine Engineering-Regeln (diese Datei).
-- `docs/AI_ENGINEERING_WORKFLOW.md` — Workflow für AI-Projekte: Default-AI-Stack, Evaluation, Observability, Retrieval und Deployment-Konventionen.
+- `docs/AI_ENGINEERING_WORKFLOW.md` — Workflow für AI-Projekte: Default-AI-Stack, Evaluation, Observability und Retrieval.
+- `docs/DEPLOYMENT_AND_SECRETS.md` — Deployment-, Environment- und Secret-Management-Konventionen für lokale Geräte, CI, Vercel und Railway.
 
-Das AI-Workflow-Dokument darf diese Regeln spezialisieren, ihnen aber nicht widersprechen.
+Spezialisierte Dokumente dürfen diese Regeln ergänzen, ihnen aber nicht widersprechen.
