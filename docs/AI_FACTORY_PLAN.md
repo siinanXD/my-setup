@@ -8,6 +8,15 @@ Not present locally: `Booking-email-check`, `maintenance-ai-assistant`. They are
 
 Rules from `docs/ENGINEERING.md` and `docs/AI_ENGINEERING_WORKFLOW.md` apply: smallest first version, PostgreSQL + pgvector when RAG is needed, no default Redis / workers / LangGraph / Qdrant / Chroma / extra providers.
 
+## Current status
+
+- `ai-core` MVP is complete and merged.
+- `ai-starter` MVP is complete and frozen.
+- Frozen `ai-starter` `main` SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
+- `ai-starter` is the default base for future customer AI projects.
+- Next specialized template: `ai-template-rag`.
+- Specialized templates should be derived from the frozen `ai-starter` rather than rebuilding app infrastructure.
+
 ## Classification
 
 | Pattern | Class | Decision |
@@ -64,6 +73,8 @@ Do **not** extract: FlowMind Mongo/Celery/LangGraph product engine, control-cent
 
 ## `ai-core` MVP
 
+Status: complete and merged.
+
 Reusable **library** of AI runtime primitives. No web app, no database, no queue, no RAG.
 
 Scope:
@@ -79,6 +90,8 @@ Out of this MVP: extra providers, routing, embeddings, retrieval, tools, approva
 
 ## `ai-starter` MVP
 
+Status: complete and frozen at `7f91e3f394536164ffefcf320b4356ad24092702`. This is the default base for future customer AI projects.
+
 Runnable customer-demo project. Copies foundation; depends on `ai-core` and `agent-eval-harness`.
 
 Stack: Next.js + FastAPI + Pydantic + PostgreSQL + SQLAlchemy + Alembic + OpenAI + Langfuse + Docker + GitHub Actions + Railway-ready config. pgvector is **optional and off** until a project needs RAG.
@@ -89,11 +102,13 @@ user submits short text → FastAPI validates → `ai-core` structured OpenAI ca
 
 That is enough to demo: request, model, structured output, persistence, observability, eval gate.
 
-## Future templates (do not build)
+## Future templates
+
+Next: `ai-template-rag`. Derive it from the frozen `ai-starter` rather than rebuilding app infrastructure. Other specialized templates stay later.
 
 | Template | Best local reference | Why later |
 | --- | --- | --- |
-| `ai-template-rag` | `document-intelligence-mvp` (ingest → retrieve → grounded ask → citations). Use `-sinan-ai-os` `memory/retrieval/` for **pgvector**, not Qdrant. | RAG only when prompting is not enough. Hybrid/rerank stay optional. |
+| `ai-template-rag` | Frozen `ai-starter` plus `document-intelligence-mvp` (ingest → retrieve → grounded ask → citations). Use `-sinan-ai-os` `memory/retrieval/` for **pgvector**, not Qdrant. | Next specialized template. RAG only when prompting is not enough. Hybrid/rerank stay optional. |
 | `ai-template-document` | `document-intelligence-mvp` | Parse/normalize/chunk/jobs/tenants are document-product, not core. |
 | `ai-template-agent` | `ai-engineer-control-center` (run + approval UI) plus `-sinan-ai-os` approval/action executor | Tools, permissions, approval gates. |
 | `ai-template-automation` | `flowmind` (trigger → graph → HITL approve → action). If `Booking-email-check` is cloned later, prefer it for the mail trigger → policy → review → action → audit shape. | LangGraph, workers, and domain triggers are optional. |
@@ -172,15 +187,15 @@ ai-core  ─────────────►  ai-starter  ─────
 
 - `ai-core` must not import FastAPI, SQLAlchemy, Next.js, or the harness.
 - `agent-eval-harness` must not import `ai-core`.
-- Templates later depend on `ai-core` + copy `ai-starter`; they do not fork a new runtime.
+- Specialized templates depend on `ai-core` and are derived from the frozen `ai-starter`; they do not fork a new runtime or rebuild app infrastructure.
 
 ## Implementation order
 
-1. Create `ai-core` from the listed primitives (copy/adapt, do not invent).
-2. Keep using `agent-eval-harness` as-is.
-3. Create `ai-starter` with the one analyze slice, Docker, health, CI, Railway config.
-4. Stop. Prove the demo and the eval gate.
-5. Only then consider `ai-template-rag` (pgvector), then document / agent / automation.
+1. Create `ai-core` from the listed primitives (copy/adapt, do not invent). **Done.**
+2. Keep using `agent-eval-harness` as-is. **Done.**
+3. Create `ai-starter` with the one analyze slice, Docker, health, CI, Railway config. **Done.**
+4. Stop. Prove the demo and the eval gate. **Done.** Frozen SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
+5. Next: `ai-template-rag` (pgvector), derived from the frozen `ai-starter`. Then document / agent / automation.
 
 ## Provenance
 
