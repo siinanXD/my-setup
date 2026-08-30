@@ -23,7 +23,8 @@ Defaults, not mandatory dependencies. Drop or replace a piece only with a concre
 | Cache / queue / temp state | Redis only with a concrete requirement |
 | Containers | Docker |
 | CI | GitHub Actions |
-| Deploy | Railway. No Kubernetes or complex cloud by default. |
+| Deploy | Vercel for Next.js frontends; Railway for FastAPI, workers, jobs, and managed PostgreSQL. No Kubernetes or complex cloud by default. |
+| Secrets | Infisical for user-managed application secrets; see `docs/DEPLOYMENT_AND_SECRETS.md`. |
 
 ## AI baseline
 
