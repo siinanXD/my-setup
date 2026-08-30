@@ -14,7 +14,9 @@ Rules from `docs/ENGINEERING.md` and `docs/AI_ENGINEERING_WORKFLOW.md` apply: sm
 - `ai-starter` MVP is complete and frozen.
 - Frozen `ai-starter` `main` SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
 - `ai-starter` is the default base for future customer AI projects.
-- Next specialized template: `ai-template-rag`.
+- `ai-template-rag` is complete and merged. It uses PostgreSQL + pgvector. Retrieval evals and grounding/citations are proven.
+- Next specialized template: `ai-template-document`.
+- `document-intelligence-mvp` is the primary reference implementation for document patterns.
 - Specialized templates should be derived from the frozen `ai-starter` rather than rebuilding app infrastructure.
 
 ## Classification
@@ -104,12 +106,12 @@ That is enough to demo: request, model, structured output, persistence, observab
 
 ## Future templates
 
-Next: `ai-template-rag`. Derive it from the frozen `ai-starter` rather than rebuilding app infrastructure. Other specialized templates stay later.
+Next: `ai-template-document`. Derive it from the frozen `ai-starter`. Use `document-intelligence-mvp` as the primary reference for proven document patterns. Other specialized templates stay later.
 
 | Template | Best local reference | Why later |
 | --- | --- | --- |
-| `ai-template-rag` | Frozen `ai-starter` plus `document-intelligence-mvp` (ingest → retrieve → grounded ask → citations). Use `-sinan-ai-os` `memory/retrieval/` for **pgvector**, not Qdrant. | Next specialized template. RAG only when prompting is not enough. Hybrid/rerank stay optional. |
-| `ai-template-document` | `document-intelligence-mvp` | Parse/normalize/chunk/jobs/tenants are document-product, not core. |
+| `ai-template-rag` | Frozen `ai-starter` plus `document-intelligence-mvp` (ingest → retrieve → grounded ask → citations). PostgreSQL + pgvector, not Qdrant. | Complete and merged. Retrieval evals and grounding/citations are proven. Hybrid/rerank stay optional. |
+| `ai-template-document` | `document-intelligence-mvp` (validate → extract text → normalize → structured extract — not jobs, tenants, Qdrant, or Docling). | Next specialized template. |
 | `ai-template-agent` | `ai-engineer-control-center` (run + approval UI) plus `-sinan-ai-os` approval/action executor | Tools, permissions, approval gates. |
 | `ai-template-automation` | `flowmind` (trigger → graph → HITL approve → action). If `Booking-email-check` is cloned later, prefer it for the mail trigger → policy → review → action → audit shape. | LangGraph, workers, and domain triggers are optional. |
 
@@ -195,7 +197,8 @@ ai-core  ─────────────►  ai-starter  ─────
 2. Keep using `agent-eval-harness` as-is. **Done.**
 3. Create `ai-starter` with the one analyze slice, Docker, health, CI, Railway config. **Done.**
 4. Stop. Prove the demo and the eval gate. **Done.** Frozen SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
-5. Next: `ai-template-rag` (pgvector), derived from the frozen `ai-starter`. Then document / agent / automation.
+5. `ai-template-rag` (PostgreSQL + pgvector), derived from the frozen `ai-starter`. **Done.** Retrieval evals and grounding/citations are proven.
+6. Next: `ai-template-document`, derived from the frozen `ai-starter`. Primary reference: `document-intelligence-mvp`. Then agent / automation.
 
 ## Provenance
 
