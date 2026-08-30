@@ -6,6 +6,14 @@ Tool-Dateien (`.cursor/rules`, `AGENTS.md`, `CLAUDE.md`) dürfen diese Regeln ni
 
 Wenn eine Anweisung in einem Tool-File dieser Datei widerspricht, gilt diese Datei — außer die Nutzerin oder der Nutzer hebt eine Regel für den aktuellen Auftrag ausdrücklich auf.
 
+## Philosophie
+
+- Einfach beginnen. Die kleinste Architektur wählen, die die aktuelle Anforderung korrekt löst.
+- Komplexität muss durch eine konkrete Anforderung oder Messung verdient sein.
+- Verständliche, bewährte Technik vor cleveren Abstraktionen.
+- Bewährte Muster aus bestehenden Repositories wiederverwenden, bevor neue entstehen.
+- Beobachtbarkeit und Testbarkeit von Anfang an mitdenken — aber keine Infrastruktur anlegen, die jetzt nicht gebraucht wird.
+
 ## Prinzipien
 
 1. **Smallest correct change.** Ändere nur das, was nötig ist, damit der Auftrag korrekt erfüllt ist.
@@ -33,7 +41,19 @@ Die Nutzerin oder der Nutzer kann die Rolle pro Auftrag überschreiben. Ohne exp
 | **Codex** | Reviewer | Kein Code ändern, außer ausdrücklich gefordert. |
 | **Claude Code** | Deep Reviewer | Kein Code ändern, außer ausdrücklich gefordert. Fokus: Architektur, Security, Regressionen, schwierige oder riskante Änderungen. |
 
+Cursor bleibt für die Implementierung zuständig. Codex bleibt für unabhängiges Code-Review und Regressionsbefunde zuständig.
+
+**Claude Code** für Architektur-Review nutzen, wenn eine Änderung nennenswerte Architektur-, Security-, Skalierungs-, Datenmodell- oder Infrastruktur-Entscheidungen einführt. Claude Code ist kein Pflicht-Freigabeschritt für kleine Änderungen.
+
 Reviewer liefern Befunde, Risiken und konkrete Hinweise. Sie patchen, formatieren oder „verbessern“ das Repo nicht von sich aus.
+
+## Architekturentscheidungen
+
+Bevor eine größere Komponente dazukommt: prüfen, ob die bestehende Architektur das Problem ohne sie löst.
+
+Beispiele, die einen konkreten Grund brauchen: Redis, Background-Worker, eigene Vektordatenbanken, LangGraph, Message Queues, Microservices, zusätzliche AI-Provider, komplexe Caching-Schichten.
+
+Projektspezifische Stacks stehen nicht in dieser Datei. Der AI-Stack und AI-spezifische Konventionen gehören nach `docs/AI_ENGINEERING_WORKFLOW.md`.
 
 ## Git und Lieferung
 
@@ -98,3 +118,10 @@ Wenn sich kanonische Kommandos etabliert haben, hier konkret eintragen (Befehl p
 4. Nur Dateien anfassen, die der Scope braucht.
 5. Risikoabschätzung: welche Checks und Tests sind für *diese* Änderung nötig?
 6. Nicht mergen. Nicht nach Production deployen. Nicht auf `main` arbeiten.
+
+## Dokumentationsstruktur
+
+- `docs/ENGINEERING.md` — allgemeine Engineering-Regeln (diese Datei).
+- `docs/AI_ENGINEERING_WORKFLOW.md` — Workflow für AI-Projekte: Default-AI-Stack, Evaluation, Observability, Retrieval und Deployment-Konventionen.
+
+Das AI-Workflow-Dokument darf diese Regeln spezialisieren, ihnen aber nicht widersprechen.
