@@ -47,6 +47,22 @@ Cursor bleibt für die Implementierung zuständig. Codex bleibt für unabhängig
 
 Reviewer liefern Befunde, Risiken und konkrete Hinweise. Sie patchen, formatieren oder „verbessern“ das Repo nicht von sich aus.
 
+## Review-, Fix- und Re-Review-Loop
+
+Ein Review-Befund ist zunächst eine Hypothese, kein automatischer Änderungsauftrag.
+
+1. Jeden Codex-, Copilot- oder Claude-Befund gegen den **aktuellen PR-Head**, den tatsächlichen Code, bestehende Tests und relevante Abhängigkeiten prüfen.
+2. Befunde als **gültig**, **bereits behoben/veraltet** oder **nicht zutreffend** einordnen. Nicht zutreffende Befunde mit konkreter Evidenz ablehnen; niemals blind fixen.
+3. Für einen gültigen Befund setzt Cursor oder ein ausdrücklich beauftragter Implementierer den **kleinsten sicheren Fix** um. Bei Verhaltens-, Security-, Daten- oder bisherigen Regressionsfehlern einen passenden Regressionstest ergänzen, wenn das bestehende Test-Pattern dies sinnvoll abbildet.
+4. Danach die für die Änderung relevanten lokalen Checks und CI erneut ausführen. **Grüne CI allein schließt einen offenen Review-Befund nicht.**
+5. Nach jedem codeändernden Fix muss der zuständige Reviewer den **neuen Head** erneut prüfen. Ein Review auf einer älteren SHA reicht nach weiteren Änderungen nicht als Freigabe.
+6. Erst wenn alle materiellen Befunde auf dem aktuellen Head behoben, veraltet oder nachvollziehbar verworfen sind und die relevanten Checks grün sind, ist der PR merge-bereit. Merge bleibt ein menschlicher Schritt.
+7. Bei nennenswerten Architektur-, Security-, Skalierungs-, Datenmodell- oder Infrastrukturänderungen folgt nach sauberem Codex-Review ein kurzer **Claude Code Final Review** auf dem aktuellen Head. Für kleine, risikoarme Änderungen ist Claude weiterhin kein Pflicht-Gate.
+
+Standardablauf für relevante Änderungen:
+
+`Cursor implementiert → CI/Copilot → Codex Review → Findings validieren → kleinste gültige Fixes → Tests/CI → Codex Re-Review auf neuem Head → bei riskanten Änderungen Claude Final Review → Owner Merge`
+
 ## Architekturentscheidungen
 
 Bevor eine größere Komponente dazukommt: prüfen, ob die bestehende Architektur das Problem ohne sie löst.
