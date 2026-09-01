@@ -1,219 +1,198 @@
 # AI Factory Plan
 
-Inventory of reusable infrastructure already built. This file plans extraction. It does not create repositories or implement code.
+Inventory of reusable infrastructure already built. This file plans extraction and project direction. It does not implement product code.
 
-Inspected locally: `document-intelligence-mvp`, `ai-engineer-control-center`, `-sinan-ai-os`, `flowmind`, `agent-eval-harness`.
+Rules from `docs/ENGINEERING.md`, `docs/AI_ENGINEERING_WORKFLOW.md`, and `docs/DEPLOYMENT_AND_SECRETS.md` apply: reuse proven code before inventing new infrastructure, keep the first version small, prefer PostgreSQL as source of truth, and require evidence for AI-derived claims.
 
-Not present locally: `Booking-email-check`, `maintenance-ai-assistant`. They are named only as future references, not as extracted evidence.
-
-Rules from `docs/ENGINEERING.md` and `docs/AI_ENGINEERING_WORKFLOW.md` apply: smallest first version, PostgreSQL + pgvector when RAG is needed, no default Redis / workers / LangGraph / Qdrant / Chroma / extra providers.
-
-## Current status
+## Current status — 2026-09-01
 
 - `ai-core` MVP is complete and merged.
-- `ai-starter` MVP is complete and frozen.
-- Frozen `ai-starter` `main` SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
+- `ai-starter` base slice is complete. Canonical frozen application baseline remains `7f91e3f394536164ffefcf320b4356ad24092702`; later deployment/secrets documentation was added without changing the baseline decision.
 - `ai-starter` is the default base for future customer AI projects.
 - `ai-template-rag` is complete and merged. It uses PostgreSQL + pgvector. Retrieval evals and grounding/citations are proven.
-- Next specialized template: `ai-template-document`.
-- `document-intelligence-mvp` is the primary reference implementation for document patterns.
-- Specialized templates should be derived from the frozen `ai-starter` rather than rebuilding app infrastructure.
+- `ai-template-document` is complete and merged. PR #1 added the focused invoice/document extraction vertical slice derived from the frozen starter.
+- `document-intelligence-mvp` is the canonical implementation/reference for the deeper document pipeline and the foundation for Machine Intelligence.
+- Latest verified `document-intelligence-mvp` state includes merged work through SIN-73 / PR #16: ingestion, Docling parsing/provenance, Qdrant retrieval, lexical search, grounded `/ask`, document profiles/relations, tenant isolation, delete/reindex, retrieval evaluation, generation controls/observability, Cursor Cloud reproducibility, automated Copilot re-review, and streaming upload limits.
+- Remaining Document Intelligence MVP focus: SIN-74 quality gates, SIN-77 Next.js decision cockpit, SIN-69 Railway production deployment, then SIN-70 end-to-end acceptance.
+- New next product layer: **Machine Intelligence**. It extends `document-intelligence-mvp`; it does not start a parallel platform.
 
-## Classification
+## AI Factory rule
+
+Specialized templates are intentionally small reusable customer-project starting points. Product repositories may be deeper and more complex when the domain requires it.
+
+Do not force `document-intelligence-mvp` or Machine Intelligence back into the smallest template architecture if the already-proven product code solves the requirement correctly.
+
+## Machine Intelligence North Star
+
+Goal:
+
+`machine → documents → assemblies → components → signals → connections → PLC addresses/logic → machine functions/sequences → evidence`
+
+Target inputs include electrical schematics, machine manuals, PLC programs/exports, BOMs, pneumatic/hydraulic plans and datasheets.
+
+Every derived entity, relation and machine-behavior claim must resolve to concrete evidence. Missing information remains unresolved. Conflicts and uncertainty remain visible.
+
+### Build-vs-buy / open-source rule
+
+Before custom parsing or new infrastructure:
+
+1. inspect the existing repositories and extension seams;
+2. check established standards and open-source parsers;
+3. use Docling for generic document parsing where it fits;
+4. prefer deterministic engineering-format parsing over LLM heuristics where possible;
+5. implement custom parsing only for a demonstrated gap.
+
+No graph database, agent orchestration layer, additional vector database or new provider is added by default. PostgreSQL remains source of truth; indexes must remain rebuildable.
+
+## Machine Intelligence implementation track
+
+Linear project: `Machine Intelligence`.
+
+Current issue chain:
+
+1. **SIN-88 — Architecture & open-source/parser audit**
+   - inspect `document-intelligence-mvp` first;
+   - evaluate standards/parsers and Docling fit;
+   - choose the first narrow machine-package fixture and supported format subset;
+   - document reuse/adapt/custom/defer decisions.
+2. **SIN-89 — Canonical machine/evidence model**
+   - blocked by SIN-88 and final Document Intelligence acceptance SIN-70;
+   - extend the existing PostgreSQL source-of-truth model with machines, assemblies, engineering entities, signals, endpoints, relations and evidence.
+3. **SIN-90 — Engineering package classification and assignment**
+   - classify files and associate them with machine/assembly using deterministic evidence first.
+4. **SIN-91 — Component/signal extraction and cross-document identity resolution**
+   - stable canonical engineering entities; ambiguity never silently merged.
+5. **SIN-92 — Evidence-backed engineering connectivity graph**
+   - store connectivity in PostgreSQL first; every edge resolves to source evidence.
+6. **SIN-93 — PLC normalization**
+   - integrate the standard/export/parser selected by SIN-88;
+   - preserve exact PLC source locations and unsupported constructs.
+7. **SIN-94 — PLC ↔ physical mapping**
+   - connect symbols/I/O/logic to physical components via identifiers and wiring evidence.
+8. **SIN-95 — Machine function and simple sequence reasoning**
+   - derive only from persisted grounded relations; LLM explanation is optional presentation, not the source of facts.
+9. **SIN-96 — Machine Intelligence evaluation + acceptance**
+   - versioned engineering golden dataset, entity/relation/mapping metrics, evidence resolvability, unsupported-claim gate and five-minute end-to-end demo.
+
+Product implementation after SIN-88 remains gated behind SIN-70 so the existing Document Intelligence foundation is accepted before adding the next layer.
+
+## Classification of reusable infrastructure
 
 | Pattern | Class | Decision |
 | --- | --- | --- |
-| LLM/provider abstraction | **A** | One OpenAI adapter + small protocol. Multi-provider routers stay out of MVP. |
-| Structured outputs | **A** | Parse + validate into Pydantic. |
-| Retries and timeouts | **A** | Bounded LLM-call retry/timeout only. Job-queue retries are not default. |
-| Tool contracts | **D** | Agent template later. No generic tool runtime in MVP. |
-| Permissions | **B / D** | Auth **outside** the LLM in starter (simple). RBAC / tenant matrices stay product-specific or agent-template. |
-| Approval gates | **D** | Proven in control-center and `-sinan-ai-os`. Not default. |
-| Idempotency | **E / D** | Domain-specific today (uploads, job claim, approval claim). Do not invent a generic idempotency framework. |
-| Workers and queues | **D** | Postgres `SKIP LOCKED` and Redis queues both exist. Default path has neither. |
-| Provider routing | **E / D** | Keep out of default. `-sinan-ai-os` `model_router` is optional later. |
-| Cost tracking | **A** | Estimate from token usage on the OpenAI call. No budget circuit breaker in MVP. |
-| Safe logging / redaction | **A** | Redact secrets; never log prompts or customer content by default. |
-| Prompt-injection boundaries | **A** | Wrap untrusted text as data. Not a full security product. |
-| Langfuse tracing | **A** | Fail-open client + generation/span helper. |
-| Latency tracking | **A** | Record on the LLM (and later retrieval) span. |
-| Retrieval / hybrid / rerank | **D** | RAG template. Do not put RAG in `ai-core`. |
-| pgvector | **B** (optional) | Default vector path **when** a project needs RAG. Not required for the first starter slice. |
-| Qdrant | **D / E** | Used in `document-intelligence-mvp`. Optional later, not default. |
-| Chroma | **E** | Not a default. Prototype-only if ever. |
-| FastAPI + Pydantic + settings | **B** | Starter foundation. |
-| PostgreSQL + SQLAlchemy + Alembic | **B** | Starter foundation. Prefer this over raw `schema.sql` or Mongo. |
-| Redis | **D** | Used in control-center and FlowMind. Not default. |
-| Docker + health/ready | **B** | Starter foundation. |
-| GitHub Actions | **B** | Lint/test + one `agent-eval-harness` step. |
-| Railway | **B** | Config only. No autonomous deploy. |
-| Next.js | **B** | One functional page. No extra UI kit. |
-| Test strategy | **B** | pytest for API; no paid model calls in default CI. |
-| Eval integration | **C + B** | Harness owns runner/scorers/gate. Starter only adds suite + target + CI line. |
+| LLM/provider abstraction | **A** | Reuse `ai-core` / proven provider patterns. |
+| Structured outputs | **A** | Parse + validate with typed schemas. |
+| Retries and timeouts | **A** | Bounded calls only; do not stack SDK/application retries. |
+| Safe logging / redaction | **A** | Never log customer content/prompts by default. |
+| Langfuse tracing | **A** | Fail-open, content-off by default. |
+| FastAPI + settings | **B** | Starter/product foundation. |
+| PostgreSQL + SQLAlchemy + Alembic | **B** | Source of truth; extend rather than replace. |
+| Next.js | **B** | Thin UI over backend state/decisions. |
+| Evaluation harness | **C + B** | Reuse deterministic eval patterns; no second generic runner. |
+| pgvector RAG | **D** | `ai-template-rag` reusable path. |
+| Document extraction | **D** | `ai-template-document` reusable focused path. |
+| Docling pipeline | **E** | Product-specific proven implementation in `document-intelligence-mvp`. |
+| Qdrant | **E** | Existing product index; keep rebuildable, not source of truth. |
+| Postgres worker | **E** | Existing product ingestion mechanism; reuse. |
+| Engineering connectivity / PLC / machine model | **E** | Machine Intelligence domain layer; extend the product, not generic `ai-core`. |
+| Graph database | **Deferred** | Only if measured PostgreSQL traversal/storage becomes insufficient. |
+| LangGraph / agent orchestration | **Deferred** | No current Machine Intelligence requirement. |
 
-**A** = `ai-core` · **B** = `ai-starter` · **C** = `agent-eval-harness` · **D** = specialized template later · **E** = project-specific, do not extract.
+**A** = `ai-core` · **B** = `ai-starter` · **C** = `agent-eval-harness` · **D** = specialized reusable template · **E** = product/domain-specific, reuse in-place.
 
-## What already exists (sources of truth)
+## Sources of truth to reuse
 
-Reuse these, do not redesign:
-
-| Need | Best local source |
+| Need | Best current source |
 | --- | --- |
-| Provider protocol + OpenAI structured `parse` | `document-intelligence-mvp` `app/providers/base.py`, `openai_provider.py`, `registry.py` |
-| Structured JSON recovery | `-sinan-ai-os` `core/structured.py` |
-| Untrusted wrapping | `-sinan-ai-os` `integrations/references/untrusted.py` and control-center `apps/api/app/core/untrusted.py` |
-| Redaction | `-sinan-ai-os` `core/redact.py` and control-center `apps/api/app/core/redaction.py` |
-| Langfuse observe / generation | `-sinan-ai-os` `integrations/langfuse/client.py`, `core/observe.py`, `core/generation.py` |
-| FastAPI + SQLAlchemy + Alembic + health | `document-intelligence-mvp` and control-center API |
-| Docker + Railway | control-center (`Dockerfile`s, `railway.json`) |
-| Postgres queue (later, not MVP) | `document-intelligence-mvp` `app/services/jobs.py`, `app/worker.py` |
-| Hybrid lexical + semantic (later) | `document-intelligence-mvp` `lexical.py`, `retrieval.py` |
-| Approvals / actions (later) | `-sinan-ai-os` `core/approval_executor.py`, `core/actions.py`; control-center `approvals.py` |
-| Evals | `agent-eval-harness` only |
+| Generic OpenAI runtime, redaction, observability | `ai-core` |
+| Customer app foundation | `ai-starter` |
+| Grounded pgvector RAG template | `ai-template-rag` |
+| Focused structured document extraction | `ai-template-document` |
+| Multi-format ingestion + Docling + provenance | `document-intelligence-mvp` |
+| Semantic + lexical retrieval and grounded citations | `document-intelligence-mvp` |
+| Document profiling/relations and evidence-bearing decisions | `document-intelligence-mvp` |
+| Tenant isolation, delete/reindex, privacy | `document-intelligence-mvp` |
+| Retrieval/generation evaluation patterns | `document-intelligence-mvp` + `agent-eval-harness` |
+| PR review/fix/re-review workflow | `my-setup` engineering docs |
 
-Do **not** extract: FlowMind Mongo/Celery/LangGraph product engine, control-center Figma/fleet/Pi worker, `-sinan-ai-os` career/LinkedIn/mission domain, Docling relations, Graphiti/FalkorDB.
+## Template status
 
-## `ai-core` MVP
-
+### `ai-core`
 Status: complete and merged.
 
-Reusable **library** of AI runtime primitives. No web app, no database, no queue, no RAG.
+Reusable AI runtime primitives only. No web app, database, queue, RAG or Machine Intelligence domain logic.
 
-Scope:
+### `ai-starter`
+Status: base MVP complete; canonical baseline frozen at `7f91e3f394536164ffefcf320b4356ad24092702`.
 
-1. OpenAI-only completion + structured completion (Pydantic schema).
-2. Timeout and bounded retry on that call.
-3. Structured-output parse fallback (fences / balanced JSON) when the SDK parse is not used.
-4. Untrusted-content wrapper.
-5. Redaction for logs and traces.
-6. Langfuse helper: generation span with latency, tokens, estimated cost, model, errors. Fail open. Never send secrets or raw customer content by default.
+Default customer-demo application foundation: Next.js + FastAPI + PostgreSQL + `ai-core` + eval gate + deployment conventions.
 
-Out of this MVP: extra providers, routing, embeddings, retrieval, tools, approvals, workers, Redis, LangGraph.
+### `ai-template-rag`
+Status: complete and merged.
 
-## `ai-starter` MVP
+Derived from frozen `ai-starter`. PostgreSQL + pgvector, grounded retrieval/answers/citations, deterministic evals. Qdrant is not required for this reusable template.
 
-Status: complete and frozen at `7f91e3f394536164ffefcf320b4356ad24092702`. This is the default base for future customer AI projects.
+### `ai-template-document`
+Status: complete and merged.
 
-Runnable customer-demo project. Copies foundation; depends on `ai-core` and `agent-eval-harness`.
+Derived from frozen `ai-starter`. Focused document extraction slice: upload/paste → validate → extract → structured grounded fields → review flag → metadata persistence → Next.js result. It remains deliberately smaller than `document-intelligence-mvp`.
 
-Stack: Next.js + FastAPI + Pydantic + PostgreSQL + SQLAlchemy + Alembic + OpenAI + Langfuse + Docker + GitHub Actions + Railway-ready config. pgvector is **optional and off** until a project needs RAG.
+### Future generic templates
 
-**Vertical slice (prompting, not RAG):**
-
-user submits short text → FastAPI validates → `ai-core` structured OpenAI call → result stored in Postgres → Langfuse generation trace → Next.js shows result + trace id.
-
-That is enough to demo: request, model, structured output, persistence, observability, eval gate.
-
-## Future templates
-
-Next: `ai-template-document`. Derive it from the frozen `ai-starter`. Use `document-intelligence-mvp` as the primary reference for proven document patterns. Other specialized templates stay later.
-
-| Template | Best local reference | Why later |
+| Template | Best reference | Scope |
 | --- | --- | --- |
-| `ai-template-rag` | Frozen `ai-starter` plus `document-intelligence-mvp` (ingest → retrieve → grounded ask → citations). PostgreSQL + pgvector, not Qdrant. | Complete and merged. Retrieval evals and grounding/citations are proven. Hybrid/rerank stay optional. |
-| `ai-template-document` | `document-intelligence-mvp` (validate → extract text → normalize → structured extract — not jobs, tenants, Qdrant, or Docling). | Next specialized template. |
-| `ai-template-agent` | `ai-engineer-control-center` (run + approval UI) plus `-sinan-ai-os` approval/action executor | Tools, permissions, approval gates. |
-| `ai-template-automation` | `flowmind` (trigger → graph → HITL approve → action). If `Booking-email-check` is cloned later, prefer it for the mail trigger → policy → review → action → audit shape. | LangGraph, workers, and domain triggers are optional. |
+| `ai-template-agent` | `ai-engineer-control-center` + approval/action patterns | Tools, permissions, approvals; only when needed. |
+| `ai-template-automation` | `flowmind` plus proven trigger/action patterns | Triggers, workflows, HITL; not default. |
 
-## Exact `ai-core` MVP files
-
-```
-ai_core/
-  __init__.py
-  provider.py      # Protocol + OpenAI complete / complete_structured
-  retry.py         # timeout + bounded retry
-  structured.py    # JSON extract / Pydantic validate
-  untrusted.py     # wrap + neutralize untrusted text
-  redact.py        # log/trace redaction
-  observe.py       # Langfuse generation span + token/cost/latency
-  cost.py          # OpenAI token cost estimate
-pyproject.toml
-tests/             # unit tests with fake OpenAI + fake Langfuse
-```
-
-## Exact `ai-starter` MVP files
-
-```
-backend/
-  app/main.py
-  app/core/settings.py
-  app/core/db.py
-  app/models.py              # one small result table
-  app/api/health.py          # /health, /ready (DB)
-  app/api/analyze.py         # the vertical slice
-  migrations/                # Alembic baseline
-  evals/suites/analyze.json  # golden structured-output cases
-  evals/target.py            # thin harness target
-  Dockerfile
-  pyproject.toml
-frontend/
-  app/page.tsx               # one form + result
-  app/healthz/route.ts
-  Dockerfile
-docker-compose.yml           # Postgres only
-.github/workflows/ci.yml     # backend tests + harness gate + frontend build
-railway.toml                 # or equivalent Railway config
-.env.example
-README.md
-```
-
-No Redis, no worker process, no vector service, no second provider.
-
-## Must not include yet
-
-- Anthropic / Gemini / Vertex / LiteLLM / multi-provider fallback
-- `model_router`, budget circuit breaker
-- Redis, Celery, RQ, generic workers
-- LangGraph
-- Qdrant, Chroma, dual vector stores
-- pgvector enabled by default
-- Tool registry, MCP, shell/filesystem/network agents
-- Approval executor
-- Tenant/RBAC product models
-- MongoDB, Graphiti, FalkorDB
-- A second eval runner
-- Kubernetes
+Machine Intelligence is **not** a generic template at this stage. It is a domain product layer built on `document-intelligence-mvp` until stable reusable patterns emerge.
 
 ## Dependency direction
 
-```
-my-setup                 docs only (this plan + engineering rules)
-       │
-       ▼
-agent-eval-harness       standalone; depends on nothing AI-runtime
-       ▲
-       │  (suites + target only)
-ai-core  ─────────────►  ai-starter  ─────────────►  customer projects
- (no FastAPI/DB)          (app template)              (also may import ai-core)
+```text
+my-setup                  engineering/factory rules
+   │
+   ├── agent-eval-harness
+   ├── ai-core
+   │      │
+   │      ▼
+   └── ai-starter ──► specialized templates ──► customer projects
+
+product track:
+ai-starter patterns + existing product code
+               │
+               ▼
+document-intelligence-mvp
+               │
+               ▼
+Machine Intelligence domain layer
 ```
 
-- `ai-core` must not import FastAPI, SQLAlchemy, Next.js, or the harness.
-- `agent-eval-harness` must not import `ai-core`.
-- Specialized templates depend on `ai-core` and are derived from the frozen `ai-starter`; they do not fork a new runtime or rebuild app infrastructure.
+Rules:
+
+- `ai-core` must not import application/domain frameworks.
+- Templates must not duplicate generic runtime infrastructure.
+- Machine Intelligence must extend current product models/services where possible, not fork a second backend.
+- Every derived machine fact must carry evidence/provenance.
 
 ## Implementation order
 
-1. Create `ai-core` from the listed primitives (copy/adapt, do not invent). **Done.**
-2. Keep using `agent-eval-harness` as-is. **Done.**
-3. Create `ai-starter` with the one analyze slice, Docker, health, CI, Railway config. **Done.**
-4. Stop. Prove the demo and the eval gate. **Done.** Frozen SHA: `7f91e3f394536164ffefcf320b4356ad24092702`.
-5. `ai-template-rag` (PostgreSQL + pgvector), derived from the frozen `ai-starter`. **Done.** Retrieval evals and grounding/citations are proven.
-6. Next: `ai-template-document`, derived from the frozen `ai-starter`. Primary reference: `document-intelligence-mvp`. Then agent / automation.
+1. `ai-core` — **Done**.
+2. `agent-eval-harness` reuse — **Done**.
+3. `ai-starter` base — **Done**, canonical baseline frozen at `7f91e3f394536164ffefcf320b4356ad24092702`.
+4. `ai-template-rag` — **Done and merged**.
+5. `ai-template-document` — **Done and merged**.
+6. Finish Document Intelligence M6: **SIN-74 + SIN-77 + SIN-69 → SIN-70**.
+7. In parallel only: Machine Intelligence **SIN-88 architecture/open-source audit**.
+8. After SIN-70: **SIN-89 → SIN-90 → SIN-91 → SIN-92 → SIN-93 → SIN-94 → SIN-95 → SIN-96**.
+9. Extract additional generic templates only after a repeated real pattern exists.
 
-## Provenance
+## Must not do by default
 
-| Extracted into MVP | Came from |
-| --- | --- |
-| Provider protocol + OpenAI structured parse | `document-intelligence-mvp` `app/providers/` |
-| Structured JSON recovery | `-sinan-ai-os` `core/structured.py` (FlowMind `backend/utils/llm_json.py` is a weaker duplicate) |
-| Untrusted wrapping | `-sinan-ai-os` `integrations/references/untrusted.py`; control-center `apps/api/app/core/untrusted.py` |
-| Redaction | `-sinan-ai-os` `core/redact.py`; control-center `apps/api/app/core/redaction.py` |
-| Langfuse client + spans | `-sinan-ai-os` `integrations/langfuse/`, `core/observe.py`, `core/generation.py`; FlowMind `backend/observability/langfuse_client.py` |
-| Token/cost on a generation | `-sinan-ai-os` `agents/llm.py` / `core/generation.py`; control-center `providers/base.py` `estimate_cost` |
-| FastAPI / settings / health | `document-intelligence-mvp` `app/main.py`, `app/api/health.py`; control-center `/health` + `/ready` |
-| SQLAlchemy + Alembic + Postgres | `document-intelligence-mvp`; control-center `apps/api` |
-| Docker + GitHub Actions + Railway | control-center |
-| Next.js app shell + healthz | control-center `apps/web` (layout only, not product pages) |
-| Eval suite / runner / gate | `agent-eval-harness` — wire only |
-
-Patterns **seen but deferred** (not MVP): control-center Redis queue + run approvals; `document-intelligence-mvp` Postgres worker + Qdrant + lexical search; `-sinan-ai-os` model router + pgvector memory + approval executor; FlowMind LangGraph + Celery + HITL.
+- rebuild Machine Intelligence in a new repository without a concrete repository-boundary reason;
+- add a graph database just because the domain is a graph;
+- add LangGraph/agents for deterministic parsing/traversal;
+- add multiple AI providers before a concrete need;
+- store derived facts without source evidence;
+- use LLM guesses to bridge missing engineering links;
+- create a second generic evaluation runner;
+- replace existing Docling/Qdrant/Postgres paths without measured benefit.
