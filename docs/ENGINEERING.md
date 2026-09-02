@@ -127,6 +127,29 @@ Fehlt ein Check, ihn nicht hinzufügen, nur um „vollständig“ zu wirken.
 
 Wenn sich kanonische Kommandos etabliert haben, hier konkret eintragen (Befehl plus wann er zu laufen hat). Bis dahin gilt nur das Ermittlungsverfahren.
 
+## Cursor-Plugin-Loop
+
+Cursor-Plugins verstärken den bestehenden Ablauf, ersetzen aber weder Rollen noch Review-Gates. Der verbindliche Ablauf bleibt:
+
+`Linear-Auftrag → Cursor-Implementierung → Tests/CI → Codex Review → validierte Fixes → Codex Re-Review → bei hohem Risiko Claude Final Review → Owner Merge`
+
+Standard-Plugins für Cursor:
+
+- `cursor-team-kit`: CI beobachten, fokussiert reparieren, Smoke-Tests und PR-Vorbereitung.
+- `ralph-loop`: nur für klar abgegrenzte Implementierungen mit prüfbaren Acceptance Criteria, explizitem Completion Promise und immer begrenzter Iterationszahl.
+- `agent-compatibility`: Repositories auf zuverlässigen Start, Validierung und belastbare Dokumentation prüfen.
+- `thermos`: optional für größere oder riskante Diffs; ersetzt nicht das unabhängige Codex-Review.
+
+`orchestrate` ist vorerst nicht Teil des Standard-Loops. Zusätzliche Cloud Agents, Bun-Setup und ein Cursor-API-Key sind erst gerechtfertigt, wenn ein konkreter Engpass gemessen ist.
+
+Plugin-Regeln:
+
+1. Ein Plugin darf `docs/ENGINEERING.md`, Acceptance Criteria oder die Tool-Rollen nicht überschreiben.
+2. Ralph-Loops müssen eine endliche `--max-iterations` besitzen und bei Unklarheit, Approval-Bedarf, Secret-/Production-Zugriff oder menschlicher Produktentscheidung stoppen.
+3. Ein Completion Promise bedeutet höchstens „Implementierung/PR bereit“, niemals automatische Merge- oder Production-Freigabe.
+4. Review-Ergebnisse bleiben Hypothesen und werden nach dem Review-, Fix- und Re-Review-Loop validiert.
+5. Details, Installation und Einsatz stehen in `docs/CURSOR_PLUGIN_LOOP.md`.
+
 ## Auftrag ausführen
 
 1. Acceptance Criteria / Auftrag lesen. Unklarheiten am Auftrag festmachen, nicht am Geschmack.
