@@ -14,13 +14,18 @@ In Cursor nacheinander ausführen:
 /add-plugin agent-compatibility
 ```
 
-Optional für größere oder riskante Pull Requests:
+Nicht zusätzlich zu `cursor-team-kit` installieren:
 
 ```text
-/add-plugin thermos
+thermos
 ```
 
-Nicht als Standard installieren:
+Die aktuelle Upstream-Dokumentation weist darauf hin, dass `thermos` und die
+Thermo-Einträge aus `cursor-team-kit` überlappen. Für diesen schlanken Standard
+bleibt deshalb `cursor-team-kit` die einzige Quelle; Claude Code übernimmt das
+separate Tiefenreview.
+
+Ebenfalls nicht als Standard installieren:
 
 ```text
 orchestrate
@@ -39,7 +44,7 @@ Die Plugin-Installation ist Cursor-/Gerätezustand und wird nicht durch Git sync
 | PR-Vorbereitung | `cursor-team-kit`: `review-and-ship` / `make-pr-easy-to-review` | Kleiner, nachvollziehbarer PR; kein Merge |
 | Unabhängiges Review | Codex | Befunde gegen aktuellen PR-Head und tatsächlichen Code |
 | Fix + Re-Review | Cursor, danach Codex | Gültige Befunde minimal beheben und neuen Head erneut prüfen |
-| Tiefenreview | Claude Code; optional `thermos` als Zusatz | Nur bei Architektur-, Security-, Datenmodell-, Skalierungs- oder Infrastruktur-Risiko |
+| Tiefenreview | Claude Code | Nur bei Architektur-, Security-, Datenmodell-, Skalierungs- oder Infrastruktur-Risiko |
 | Abschluss | Owner | Manueller Merge; Production-Deploy bleibt separat und manuell |
 
 ## Ralph-Loop sicher starten
@@ -83,7 +88,7 @@ Die Zahl `12` ist ein Startwert, kein Ziel. Für kleine Fixes weniger Iteratione
 ## Einsatzgrenzen
 
 - `agent-compatibility` beim erstmaligen Übernehmen eines Repos oder nach relevanten Workflow-/Bootstrap-Änderungen ausführen, nicht bei jedem kleinen PR.
-- `thermos` nur für ausreichend große oder riskante Diffs. Es ergänzt Codex und Claude, ersetzt sie nicht.
+- `thermos` nicht parallel zu den überlappenden Thermo-Einträgen aus `cursor-team-kit` installieren.
 - `review-and-ship` darf Branch, Commit und PR vorbereiten, aber keinen Merge oder Deploy auslösen.
 - Keine automatische Änderung von Dependencies, Versionen, Secrets, Deployments oder Git-Historie.
 - Bei uneindeutigem Scope zurück zu Linear bzw. zum Owner statt weitere Agentenschleifen zu starten.
